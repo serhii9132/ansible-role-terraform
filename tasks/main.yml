@@ -1,0 +1,57 @@
+---
+- name: Download GPG key
+  ansible.builtin.get_url:
+    url: "{{ gpg_key_url }}"
+    dest: "{{ gpg_key_file_armored }}"
+    owner: root
+    group: root
+    mode: '644'
+
+- name: De-Armor GPG key
+  ansible.builtin.shell:
+    cmd: |
+      gpg --dearmor < "{{ gpg_key_file_armored }}" > "{{ gpg_key_file }}"
+  args:
+    creates: "{{ gpg_key_file }}"
+
+- name: Remove armored GPG key
+  ansible.builtin.file:
+    path: "{{ gpg_key_file_armored }}"
+    state: absent
+
+- name: Add the repository to APT sources
+  ansible.builtin.deb822_repository:
+    name: packer
+    types: ["deb"]
+    uris: "{{ base_hashicorp_url }}"
+    suites: "{{ ansible_distribution_release }}"
+    components: main
+    signed_by: "{{ gpg_key_file }}"
+    architectures: amd64
+    enabled: true
+
+- name: Install Terraform
+  ansible.builtin.package:
+    name: packer
+    state: present
+    update_cache: true
+
+- name: Verify the installation
+  ansible.builtin.command:
+    cmd: terraform -help
+  register: terraform_output
+  changed_when: false
+
+- name: Print terraform -help output
+  ansible.builtin.debug:
+    var: terraform_output.stdout
+  changed_when: false
+
+- name: Add autocompletion for Terraform
+  ansible.builtin.command:
+    cmd: terraform -install-autocomplete
+  register: packer_autocomplete
+  failed_when: >
+    packer_autocomplete.rc != 0 and
+    'already installed' not in packer_autocomplete.stderr
+  changed_when: packer_autocomplete.rc == 0

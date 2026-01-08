@@ -1,4 +1,10 @@
 ---
+- name: Install prerequisite packages
+  loop: "{{ dependencies }}"
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    update_cache: true
+
 - name: Download GPG key
   ansible.builtin.get_url:
     url: "{{ gpg_key_url }}"
@@ -31,27 +37,20 @@
     enabled: true
 
 - name: Install Terraform
-  ansible.builtin.package:
-    name: packer
-    state: present
+  ansible.builtin.apt:
+    name: terraform
     update_cache: true
 
 - name: Verify the installation
   ansible.builtin.command:
-    cmd: terraform -help
-  register: terraform_output
-  changed_when: false
-
-- name: Print terraform -help output
-  ansible.builtin.debug:
-    var: terraform_output.stdout
+    cmd: terraform -version
   changed_when: false
 
 - name: Add autocompletion for Terraform
   ansible.builtin.command:
     cmd: terraform -install-autocomplete
-  register: packer_autocomplete
+  register: terraform_autocomplete
   failed_when: >
-    packer_autocomplete.rc != 0 and
-    'already installed' not in packer_autocomplete.stderr
-  changed_when: packer_autocomplete.rc == 0
+    terraform_autocomplete.rc != 0 and
+    'already installed' not in terraform_autocomplete.stderr
+  changed_when: terraform_autocomplete.rc == 0

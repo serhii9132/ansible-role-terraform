@@ -5,26 +5,6 @@
     name: "{{ item }}"
     update_cache: true
 
-- name: Download GPG key
-  ansible.builtin.get_url:
-    url: "{{ gpg_key_url }}"
-    dest: "{{ gpg_key_file_armored }}"
-    owner: root
-    group: root
-    mode: '644'
-
-- name: De-Armor GPG key
-  ansible.builtin.shell:
-    cmd: |
-      gpg --dearmor < "{{ gpg_key_file_armored }}" > "{{ gpg_key_file }}"
-  args:
-    creates: "{{ gpg_key_file }}"
-
-- name: Remove armored GPG key
-  ansible.builtin.file:
-    path: "{{ gpg_key_file_armored }}"
-    state: absent
-
 - name: Add the repository to APT sources
   ansible.builtin.deb822_repository:
     name: packer
@@ -32,7 +12,7 @@
     uris: "{{ base_hashicorp_url }}"
     suites: "{{ ansible_distribution_release }}"
     components: main
-    signed_by: "{{ gpg_key_file }}"
+    signed_by: "{{ gpg_key_url }}"
     architectures: amd64
     enabled: true
 

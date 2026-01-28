@@ -1,8 +1,5 @@
 dependencies:
-  - gnupg
-  - software-properties-common
+  - python3-debian
 
 base_hashicorp_url: https://apt.releases.hashicorp.com
 gpg_key_url: "{{ base_hashicorp_url }}/gpg"
-gpg_key_file_armored: /tmp/terraform.gpg
-gpg_key_file: /etc/apt/keyrings/terraform.gpg

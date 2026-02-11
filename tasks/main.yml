@@ -1,6 +1,6 @@
 ---
 - name: Install prerequisite packages
-  loop: "{{ dependencies }}"
+  loop: "{{ __terraform_dependencies }}"
   ansible.builtin.apt:
     name: "{{ item }}"
     update_cache: true
@@ -9,10 +9,10 @@
   ansible.builtin.deb822_repository:
     name: packer
     types: ["deb"]
-    uris: "{{ base_hashicorp_url }}"
+    uris: "{{ __terraform_base_url }}"
     suites: "{{ ansible_distribution_release }}"
     components: main
-    signed_by: "{{ gpg_key_url }}"
+    signed_by: "{{ __terraform_gpg_key_url }}"
     architectures: amd64
     enabled: true
 

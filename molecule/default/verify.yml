@@ -1,0 +1,17 @@
+---
+- name: Verify
+  hosts: all
+  tasks:
+    - name: Get Terraform version
+      ansible.builtin.command:
+        cmd: terraform --version
+      register: terraform_version
+      failed_when: terraform_version.rc != 0
+      changed_when: false
+
+    - name: Validate version output
+      ansible.builtin.assert:
+        that:
+          - "'v1.' in terraform_version.stdout"
+          - "terraform_version.stdout_lines | length > 0"
+        fail_msg: "Error"

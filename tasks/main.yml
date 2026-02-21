@@ -1,13 +1,12 @@
 ---
 - name: Install prerequisite packages
-  loop: "{{ __terraform_dependencies }}"
   ansible.builtin.apt:
-    name: "{{ item }}"
+    name: "{{ __terraform_dependencies }}"
     update_cache: true
 
 - name: Add the repository to APT sources
   ansible.builtin.deb822_repository:
-    name: packer
+    name: terraform
     types: ["deb"]
     uris: "{{ __terraform_base_url }}"
     suites: "{{ ansible_distribution_release }}"
